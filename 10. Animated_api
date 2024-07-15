@@ -1,0 +1,226 @@
+# Animation React-Native
+
+Basic of animation in react native
+
+```
+import React, {useReducer, useRef, useState} from 'react';
+import {
+  Animated,
+  View,
+  Text,
+  TouchableOpacity,
+  PanResponder,
+  ScrollView,
+} from 'react-native';
+
+function App(): React.JSX.Element {
+  const [isAnimating, setIsAnimating] = useState(false);
+  const translateY = useState(new Animated.Value(0))[0];
+  const opacity = useRef(new Animated.Value(0)).current;
+
+
+  //===================pan responder=================//
+  const pan = useRef(new Animated.ValueXY()).current;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderMove: Animated.event([null, {dx: pan.x, dy: pan.y}], {
+        useNativeDriver: false,
+      }),
+      onPanResponderRelease: () => {
+        pan.extractOffset();
+      },
+    }),
+  ).current;
+
+  // =================fade In==================//
+
+  const fadeIn = () => {
+    Animated.timing(opacity, {
+      toValue: 1,
+      duration: 1000,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  //==================fade out================//
+  const fadeOut = () => {
+    Animated.timing(opacity, {
+      toValue: 0,
+      duration: 1000,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  //================move ball up and down===============//
+
+  const moveBall = () => {
+    if (isAnimating) return;
+    console.log('animating');
+    setIsAnimating(true);
+
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(translateY, {
+          toValue: 50,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(translateY, {
+          toValue: 0,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+
+    animation.start();
+
+    setTimeout(() => {
+      animation.stop();
+      setIsAnimating(false);
+    }, 10000);
+  };
+
+  // How is the animation actually played on the screen?
+  // 1> Computations: JS thread; Animation by Native OS
+  // 1.a Compute
+  // 1.b Serialize
+  // 1.c transfer data on bridge
+  // 1.d Deserialize
+  // 1.e run animation (NO) it runs frame and animation become lag
+  // if we are doing that much step then obviously this gonna
+  //cost less performance as if we want to make interaction on
+  //UI let click a button our
+  // app will get stuck for a while until the thread is already busy
+
+  // 2> Everything by Native OS
+  // 2.a before your animation starts ->serialize the whole animation thing
+  // 2.b Native OS deserialize the whole thing
+  // 2.c boom! it run the animation
+
+  return (
+    <View style={{flex: 1, backgroundColor: 'black'}}>
+      <ScrollView
+        contentContainerStyle={{flexGrow: 1}}
+        style={{flex: 1, backgroundColor: 'green'}}>
+        <View
+          style={{
+            flex: 1,
+
+            justifyContent: 'center',
+            alignItems: 'center',
+            // backgroundColor: 'pink',
+          }}>
+          <Animated.View
+            style={{
+              opacity: opacity,
+              transform: [{translateY: translateY}],
+              height: 100,
+              width: 100,
+              borderRadius: 50,
+              backgroundColor: 'red',
+            }}
+          />
+          <TouchableOpacity style={{marginTop: 10}} onPress={moveBall}>
+            <Text style={{color: 'yellow'}}>Click me</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={{marginTop: 10}} onPress={fadeIn}>
+            <Text style={{color: 'yellow'}}>Fade In</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={{marginTop: 10}} onPress={fadeOut}>
+            <Text style={{color: 'yellow'}}>Fade Out</Text>
+          </TouchableOpacity>
+          <Animated.View
+            style={{
+              transform: [{translateX: pan.x}, {translateY: pan.y}],
+            }}
+            {...panResponder.panHandlers}>
+            <View
+              style={{
+                height: 150,
+                width: 150,
+                backgroundColor: 'blue',
+                borderRadius: 5,
+              }}
+            />
+          </Animated.View>
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
+
+export default App;
+
+```
+
+\*\* Animated.timing()
+
+```
+        const translateY = useState(new Animated.Value(0))[0];
+
+        Animated.timing(translateY, {
+          toValue: 50,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+```
+
+- we declared a variable translateY using useState second way is to useSharedValue()
+- const translateY = useState(new Animated.Value(0))[0];\
+  const pan = useRef(new Animated.ValueXY()).current;\
+  variables for the animation can be defined as this
+
+- ** parameters **
+
+Animated.timing(variable_to_be_changed,{\
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;toValue:final_value,\
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;duration:duration_of_animation_ms,\
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;useNativeDriver:true/false,\
+})
+
+```
+const moveBall = () => {
+    if (isAnimating) return;
+    console.log('animating');
+    setIsAnimating(true);
+
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(translateY, {
+          toValue: 50,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(translateY, {
+          toValue: 0,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+
+    animation.start();
+
+    setTimeout(() => {
+      animation.stop();
+      setIsAnimating(false);
+    }, 10000);
+  };
+```
+
+- Here Animation.loop() is used to create a looping animation
+- Animation.sequence([]) takes an array of Animation.timing() to animate more than one thing at a time
+
+```
+{
+   translateY: animatedSize.interpolate({
+      inputRange: [0, 1],
+      outputRange: [-150, 0],
+    }),
+},
+```
+
+- interpolate data for one input range to another
