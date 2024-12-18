@@ -14,3 +14,10 @@
 - [RNUILib](https://wix.github.io/react-native-ui-lib/)
 - [Shoutem UI](https://shoutem.github.io/docs/ui-toolkit/components)
 - [gluestack UI](https://gluestack.io/)
+
+## Animation Library
+- [Reanimated](https://docs.swmansion.com/react-native-reanimated/)
+- [React native animatable](https://github.com/oblador/react-native-animatable)
+- [React native motion](https://github.com/xotahal/react-native-motion)
+- [Lottie](https://airbnb.io/lottie/#/)-[LottieFiles](https://lottiefiles.com/)for free animation
+- 
